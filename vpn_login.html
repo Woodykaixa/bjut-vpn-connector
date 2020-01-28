@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta lang="zh">
+
+    <style>
+        header {
+            display: flex;
+        }
+
+        section {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .infoArea {
+            padding: 10px;
+        }
+
+        label {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <section>
+        <header id="statusBox">
+            <div id="statusConnecting" style="display: none;">
+                <img src="./img/connecting.gif">
+            <h3>正在连接...</h3>
+            </div>
+        </header>
+        <div class="infoArea">
+            <label>用户名</label><br>
+            <input id="studentId" type="text">
+        </div>
+        <div class="infoArea">
+            <label>密 码</label><br>
+            <input id="password" type="password">
+        </div>
+        <div class="infoArea">
+            <button id="connect" type="submit">连接</button>
+        </div>
+    </section>
+</body>
+<script src="./vpn_login.js">
+</script>
+
+</html>
