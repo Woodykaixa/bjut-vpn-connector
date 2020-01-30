@@ -25,19 +25,31 @@
         label {
             text-align: center;
         }
+
+        img {
+            margin-left: 10px;
+        }
     </style>
 </head>
 
 <body>
     <section>
         <header id="statusBox">
+            <div id="statusNotConnected">
+                <img src="./img/not_connected.png">
+                <h3>VPN未连接</h3>
+            </div>
             <div id="statusConnecting" style="display: none;">
-                <img src="./img/connecting.gif">
+                <img src="./img/loading.gif">
                 <h3>正在连接...</h3>
             </div>
             <div id="statusConnected" style="display: none;">
                 <img src="./img/connected.png">
-                <h3>已连接</h3>
+                <h3>VPN已连接</h3>
+            </div>
+            <div id="statusDisconnecting" style="display: none;">
+                <img src="./img/loading.gif">
+                <h3>正在断开...</h3>
             </div>
         </header>
         <div class="infoArea">
@@ -50,10 +62,11 @@
         </div>
         <div class="infoArea">
             <button id="connect" type="submit">连接</button>
+            <button id="disconnect" type="submit" style="display: none;" disabled=true>断开</button>
         </div>
     </section>
 </body>
-<script src="./vpn_login.js">
+<script src="./popup.js">
 </script>
 
 </html>

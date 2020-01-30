@@ -8,7 +8,7 @@ const getElement = (id) => {
 }
 
 /**
- * 本函数返回在 @file background.js 和 @file vpn_login.js 之间通信使用的
+ * 本函数返回在 @file background.js 和 @file popup.js 之间通信使用的
  * 消息对象。由于import引发了以下错误:
  *   Uncaught SyntaxError: Cannot use import statement outside a module
  * 加上函数的实现极其简单，我懒得配置webpack，所以就在两个文件中定义了相同的
@@ -24,6 +24,7 @@ const msg = (type, content) => {
 }
 
 let connectButton = getElement('connect')
+let disconnectButton = getElement('disconnect')
 let ConnectionStatus = null
 
 /**
@@ -33,7 +34,8 @@ let ConnectionStatus = null
 const StatusToCode = {
     not_connected: 0,
     connecting: 1,
-    connected: 2
+    connected: 2,
+    disconnecting: 3
 }
 
 /**
@@ -47,9 +49,10 @@ const StatusToCode = {
  *  box就是vpn_login.html中id为'statusConnecting'的元素，也就是那个转圈的。
  */
 const StatusBoxes = [
-    null,
+    getElement('statusNotConnected'),
     getElement('statusConnecting'),
-    getElement('statusConnected')
+    getElement('statusConnected'),
+    getElement('statusDisconnecting')
 ]
 
 /**
@@ -58,14 +61,10 @@ const StatusBoxes = [
  */
 const changeDisplayedStatus = (status) => {
     StatusBoxes.forEach((element) => {
-        if (element !== null) {
-            element.style.display = 'none'
-        }
+        element.style.display = 'none'
     })
-    let box = StatusBoxes[StatusToCode[status]]
-    if (box !== null) {
-        box.style.removeProperty('display')
-    }
+    StatusBoxes[StatusToCode[status]].style.removeProperty('display')
+
 }
 
 /**
@@ -94,11 +93,19 @@ const changeStatus = (status) => {
     changeDisplayedStatus(status)
     if (status === 'connected') {
         connectButton.disabled = true
+        connectButton.style.display = 'none'
+        disconnectButton.disabled = false
+        disconnectButton.style.removeProperty('display')
+    } else if (status === 'not_connected') {
+        disconnectButton.disabled = true
+        disconnectButton.style.display = 'none'
+        connectButton.disabled = false
+        connectButton.style.removeProperty('display')
     }
 }
 
 /**
- * 提交按钮点击事件。向background发送登录用的数据。
+ * 连接按钮点击事件。向background发送登录用的数据。
  */
 connectButton.addEventListener('click', () => {
     changeStatus('connecting')
@@ -112,6 +119,14 @@ connectButton.addEventListener('click', () => {
             alert('请检查用户名是否输入正确')
         }
     })
+})
+
+/**
+ * 断开按钮点击事件。
+ */
+disconnectButton.addEventListener('click', () => {
+    changeStatus('disconnecting')
+    chrome.runtime.sendMessage(msg('logout', null))
 })
 
 /**

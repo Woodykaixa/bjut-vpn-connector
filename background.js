@@ -1,5 +1,5 @@
 /**
- * 本函数返回在 @file background.js 和 @file vpn_login.js 之间通信使用的
+ * 本函数返回在 @file background.js 和 @file popup.js 之间通信使用的
  * 消息对象。由于import引发了以下错误:
  *   Uncaught SyntaxError: Cannot use import statement outside a module
  * 加上函数的实现极其简单，我懒得配置webpack，所以就在两个文件中定义了相同的
@@ -21,7 +21,8 @@ class VpnConnector {
     postData = ''
     cookies = null
     static ConnectionStatus = 'not_connected'
-    static VpnUrl = 'https://vpn.bjut.edu.cn/prx/000/http/localhost/login'
+    static LoginUrl = 'https://vpn.bjut.edu.cn/prx/000/http/localhost/login'
+    static LogoutUrl = 'https://vpn.bjut.edu.cn/prx/000/http/localhost/logout'
 
     constructor() {
     }
@@ -51,27 +52,44 @@ class VpnConnector {
         }
     }
 
+    static announceStatusChanged() {
+        chrome.runtime.sendMessage(msg('change_status', VpnConnector.ConnectionStatus))
+    }
+
     tryConnect() {
-        let postData = connector.postData
+        let postData = this.postData
         let request = new XMLHttpRequest()
         VpnConnector.ConnectionStatus = 'connecting'
-        request.open('POST', VpnConnector.VpnUrl, true)
+        request.open('POST', VpnConnector.LoginUrl, true)
         request.onreadystatechange = () => {
             if (request.readyState === 4) {
-                alert(request.responseURL.indexOf('welcome') !== -1)
                 if (request.responseURL.indexOf('welcome') !== -1) {
                     VpnConnector.ConnectionStatus = 'connected'
-                    chrome.runtime.sendMessage(msg('change_status', 'connected'))
+                    VpnConnector.announceStatusChanged()
                 }
                 chrome.cookies.getAll({
                     domain: 'vpn.bjut.edu.cn'
                 }, (cookies) => {
-                    connector.cookies = cookies
+                    this.cookies = cookies
                     alert(JSON.stringify(cookies))
                 })
             }
         }
         request.send(postData)
+    }
+
+    tryDisconnect() {
+        VpnConnector.ConnectionStatus = 'disconnecting'
+        let request = new XMLHttpRequest()
+        request.open('GET', VpnConnector.LogoutUrl, true)
+        request.onreadystatechange = () => {
+            if (request.readyState === 4) {
+                alert(request.responseURL)
+                VpnConnector.ConnectionStatus = 'not_connected'
+                VpnConnector.announceStatusChanged()
+            }
+        }
+        request.send()
     }
 
     /**
@@ -83,11 +101,6 @@ class VpnConnector {
     }
 
 }
-
-let connector = null
-document.addEventListener('DOMContentLoaded', () => {
-    connector = new VpnConnector()
-})
 
 /**
  * 处理登录请求
@@ -116,13 +129,22 @@ const handleQuery = (content) => {
     return `cannot query content: ${content.what}`
 }
 
+/**
+ * 处理登出请求
+ */
+const handleLogout = () => {
+    connector.tryDisconnect()
+    return 'posted'
+}
+
 const handler = {
     login: handleLogin,
-    query: handleQuery
+    query: handleQuery,
+    logout: handleLogout
 }
 
 /**
- * 接收vpn_login消息的监听器。
+ * 接收popup消息的监听器。
  * @param {{type:string,content:any}} message 
  * @param {*} sender 
  * @param {function ({msg:any}) } sendResponse 使用这个函数回应消息
@@ -149,5 +171,13 @@ const onBeforeRequestListener = (detail) => {
 
 }
 
-chrome.webRequest.onBeforeRequest.addListener(onBeforeRequestListener,
-    { urls: ['*://*.bjut.edu.cn/*'] }, ['blocking'])
+chrome.webRequest.onBeforeRequest.addListener(
+    onBeforeRequestListener,
+    { urls: ['*://*.bjut.edu.cn/*'] },
+    ['blocking']
+)
+
+let connector = null
+document.addEventListener('DOMContentLoaded', () => {
+    connector = new VpnConnector()
+})
