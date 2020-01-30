@@ -52,8 +52,15 @@ class VpnConnector {
         }
     }
 
-    static announceStatusChanged() {
-        chrome.runtime.sendMessage(msg('change_status', VpnConnector.ConnectionStatus))
+    /**
+     * 告知popup更改连接状态,更改为VpnConnector.ConnectionStatus
+     * @param {string} reason 更改原因
+     */
+    static announceStatusChanged(reason) {
+        chrome.runtime.sendMessage(msg('change_status', {
+            changeTo: VpnConnector.ConnectionStatus,
+            reason: reason
+        }))
     }
 
     tryConnect() {
@@ -65,7 +72,10 @@ class VpnConnector {
             if (request.readyState === 4) {
                 if (request.responseURL.indexOf('welcome') !== -1) {
                     VpnConnector.ConnectionStatus = 'connected'
-                    VpnConnector.announceStatusChanged()
+                    VpnConnector.announceStatusChanged('login successful')
+                } else {
+                    VpnConnector.ConnectionStatus = 'not_connected'
+                    VpnConnector.announceStatusChanged('login failed')
                 }
             }
         }
@@ -80,7 +90,7 @@ class VpnConnector {
             if (request.readyState === 4) {
                 alert(request.responseURL)
                 VpnConnector.ConnectionStatus = 'not_connected'
-                VpnConnector.announceStatusChanged()
+                VpnConnector.announceStatusChanged('logout successful')
             }
         }
         request.send()
