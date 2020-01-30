@@ -24,6 +24,7 @@ const msg = (type, content) => {
 }
 
 let connectButton = getElement('connect')
+let ConnectionStatus = null
 
 /**
  * 将VpnConnector的ConnectionStatus转为数组下标。与StatusBoxes配合使用，则可以
@@ -69,30 +70,45 @@ const changeDisplayedStatus = (status) => {
 
 /**
  * 向background获取Vpn的连接状态，并根据获得的状态改变网页中显示的状态
+ * response = { msg: any }
+ * @param {Function} extraFunction 获得response之后的动作
  */
-const queryConnectionStatus = () => {
+const queryConnectionStatus = (extraFunction) => {
     chrome.runtime.sendMessage(msg('query', { what: 'connection status' }), (response) => {
-        let status = response.msg
-        changeDisplayedStatus(status)
-        if (status === 'connected') {
-            connectButton.disabled = true
+        ConnectionStatus = response.msg
+        if (extraFunction) {
+            extraFunction()
         }
-
     })
+}
+
+/**
+ * 将popup端的连接状态改变为@param status
+ * @param {string} status 想要切换的连接状态
+ */
+const changeStatus = (status) => {
+    if (status === null) {
+        alert('Connection Status is null.')
+        return
+    }
+    changeDisplayedStatus(status)
+    if (status === 'connected') {
+        connectButton.disabled = true
+    }
 }
 
 /**
  * 提交按钮点击事件。向background发送登录用的数据。
  */
 connectButton.addEventListener('click', () => {
-    changeDisplayedStatus('connecting')
+    changeStatus('connecting')
     let loginInfo = {
         id: getElement('studentId').value,
         pwd: getElement('password').value
     }
     chrome.runtime.sendMessage(msg('login', loginInfo), (response) => {
         if (response.msg === 'invalid') {
-            changeDisplayedStatus('not_connected')
+            changeStatus('not_connected')
             alert('请检查用户名是否输入正确')
         }
     })
@@ -106,10 +122,8 @@ connectButton.addEventListener('click', () => {
  */
 const onMessageListener = (message, sender, sendResponse) => {
     if (message.type === 'change_status') {
-        changeDisplayedStatus(message.content)
-        connectButton.disabled = true
+        changeStatus(message.content)
     }
-    sendResponse()
 }
 
 chrome.runtime.onMessage.addListener(onMessageListener)
@@ -118,5 +132,7 @@ chrome.runtime.onMessage.addListener(onMessageListener)
  * 向DOM添加监听器，DOM加载完成时向background查询Vpn连接状态
  */
 document.addEventListener('DOMContentLoaded', () => {
-    queryConnectionStatus()
+    queryConnectionStatus(() => {
+        changeStatus(ConnectionStatus)
+    })
 })
