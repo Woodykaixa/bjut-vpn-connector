@@ -41,18 +41,13 @@ class VpnConnector {
      * @param {string} url 
      */
     static makeRedirectUrl(url) {
-        if (detail.url.indexOf('http://') != -1) {
-            alert('链接将重定向至:https://vpn.bjut.edu.cn/prx/000/http/' +
-                detail.url.substring(7)
-            )
-            return 'https://vpn.bjut.edu.cn/prx/000/http/' +
-                detail.url.substring(7)
-        } else if (detail.url.indexOf('https://') != -1) {
-            alert('链接将重定向至:https://vpn.bjut.edu.cn/prx/000/http/' +
-                detail.url.substring(8)
-            )
-            return 'https://vpn.bjut.edu.cn/prx/000/http/' +
-                detail.url.substring(8)
+        if (/^https?:\/\/(?!vpn)[^.]+\.bjut\.edu\.cn\/.*$/.test(url)) {
+            let redirectUrl = url.replace(/^http:\/\//, 'https://vpn.bjut.edu.cn/prx/000/http/')
+            if (redirectUrl === url) {
+                redirectUrl = url.replace(/^https:\/\//, 'https://vpn.bjut.edu.cn/prx/000/https/')
+            }
+            alert(redirectUrl)
+            return redirectUrl
         }
     }
 
@@ -67,17 +62,6 @@ class VpnConnector {
                 if (request.responseURL.indexOf('welcome') !== -1) {
                     VpnConnector.ConnectionStatus = 'connected'
                     chrome.runtime.sendMessage(msg('change_status', 'connected'))
-                    chrome.webRequest.onBeforeRequest.addListener((detail) => {
-                        if (detail.url.indexOf('http://') != -1) {
-                            alert('链接将重定向至:https://vpn.bjut.edu.cn/prx/000/http/' +
-                                detail.url.substring(7)
-                            )
-                            return {
-                                redirectUrl: 'https://vpn.bjut.edu.cn/prx/000/http/' +
-                                    detail.url.substring(7)
-                            }
-                        }
-                    }, { urls: ['*://*.bjut.edu.cn/*'] }, ['blocking'])
                 }
                 chrome.cookies.getAll({
                     domain: 'vpn.bjut.edu.cn'
@@ -151,3 +135,19 @@ const onMessageListener = (message, sender, sendResponse) => {
 }
 
 chrome.runtime.onMessage.addListener(onMessageListener)
+
+/**
+ * 在请求发生前调用，重定向链接。
+ */
+const onBeforeRequestListener = (detail) => {
+    if (VpnConnector.ConnectionStatus !== 'connected') {
+        return null
+    }
+    return {
+        redirectUrl: VpnConnector.makeRedirectUrl(detail.url)
+    }
+
+}
+
+chrome.webRequest.onBeforeRequest.addListener(onBeforeRequestListener,
+    { urls: ['*://*.bjut.edu.cn/*'] }, ['blocking'])
