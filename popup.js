@@ -137,7 +137,10 @@ disconnectButton.addEventListener('click', () => {
  */
 const onMessageListener = (message, sender, sendResponse) => {
     if (message.type === 'change_status') {
-        changeStatus(message.content)
+        changeStatus(message.content.changeTo)
+    }
+    if (message.content.reason === 'login failed') {
+        alert('连接失败，请检查密码')
     }
 }
 
