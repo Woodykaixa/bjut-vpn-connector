@@ -67,12 +67,6 @@ class VpnConnector {
                     VpnConnector.ConnectionStatus = 'connected'
                     VpnConnector.announceStatusChanged()
                 }
-                chrome.cookies.getAll({
-                    domain: 'vpn.bjut.edu.cn'
-                }, (cookies) => {
-                    this.cookies = cookies
-                    alert(JSON.stringify(cookies))
-                })
             }
         }
         request.send(postData)
