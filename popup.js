@@ -22,7 +22,7 @@ const msg = (type, content) => {
         content: content
     }
 }
-
+let nameInput= getElement("studentId")
 let connectButton = getElement('connect')
 let disconnectButton = getElement('disconnect')
 let ConnectionStatus = null
@@ -54,6 +54,8 @@ const StatusBoxes = [
     getElement('statusConnected'),
     getElement('statusDisconnecting')
 ]
+let cId="undefined";
+let cPsw= "undefined";
 
 /**
  * 改变vpn_login.html中显示的连接状态
@@ -92,6 +94,7 @@ const changeStatus = (status) => {
     }
     changeDisplayedStatus(status)
     if (status === 'connected') {
+        savePassword();
         connectButton.disabled = true
         connectButton.style.display = 'none'
         disconnectButton.disabled = false
@@ -104,36 +107,52 @@ const changeStatus = (status) => {
     }
 }
 
+const savePassword = () => {
+    let theId = getElement('studentId').value;
+    let thePassword = getElement('password').value;
+    chrome.storage.local.set({'name': theId}, function () {
+        console.log('name is set to ' + theId);
+    });
+    chrome.storage.local.set({'password': thePassword}, function () {
+        console.log('password is set to ' + thePassword);
+    });
+};
+const getId =()=> {
+    chrome.storage.local.get(['name'], (result) => {
+        cId=result.name;
+    });
+
+}
+const getPassword =()=> {
+    chrome.storage.local.get(['password'], (result) =>{
+        cPsw=result.password;
+    });
+
+}
+
+ nameInput.addEventListener('input',()=>{
+     getId();
+     getPassword();
+     if(getElement('studentId').value===cId) {
+         getElement('password').value=cPsw;
+     }
+})
 /**
  * 连接按钮点击事件。向background发送登录用的数据。
  */
 connectButton.addEventListener('click', () => {
     changeStatus('connecting')
     let loginInfo;
-    let password;
-    let Id;
-    password=getPassword();
-    Id=getId();
-    if (password===undefined) {
-        console.log('id currently is ' + Id);
-        loginInfo = {
-            id: getElement('studentId').value,
-            pwd: getElement('password').value
-        };
-    }
-    else
-    {
-        loginInfo = {
-            id: getId(),
-            pwd: getPassword()
-        };
-    }
+    loginInfo = {
+        id: getElement('studentId').value,
+        pwd: getElement('password').value
+    };
     chrome.runtime.sendMessage(msg('login', loginInfo), (response) => {
         if (response.msg === 'invalid') {
             changeStatus('not_connected')
             alert('请检查用户名是否输入正确')
         }
-        else savePassword();
+
     })
 })
 
@@ -145,35 +164,7 @@ disconnectButton.addEventListener('click', () => {
     changeStatus('disconnecting')
     chrome.runtime.sendMessage(msg('logout', null))
 })
-let getPassword;
-let getId;
-let savePassword;
-savePassword = () => {
-    let theId = getElement('studentId').value;
-    let thePassword = getElement('password').value;
-        chrome.storage.local.set({'name': theId}, function () {
-            console.log('name is set to ' + theId);
-        });
-        chrome.storage.local.set({'password': thePassword}, function () {
-            console.log('password is set to ' + thePassword);
-        });
-};
-getId =()=> {
-    let id;
-    chrome.storage.local.get(['name'], function (id) {
-        console.log('name currently is ' + id.name);
-        return id.name;
-    });
 
-}
-getPassword =()=> {
-    let  psw;
-    chrome.storage.local.get(['password'], function (psw) {
-        console.log('password currently is ' + psw.password);
-        return psw.password;
-    });
-
-}
 
 /**
  * 接收background消息的监听器。
