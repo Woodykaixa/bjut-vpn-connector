@@ -22,10 +22,13 @@ const msg = (type, content) => {
         content: content
     }
 }
-let nameInput= getElement("studentId")
+let nameInput = getElement("studentId")
 let connectButton = getElement('connect')
 let disconnectButton = getElement('disconnect')
+let rememberMeCheckbox = getElement('rememberMe')
 let ConnectionStatus = null
+let rememberLoginInfo = null
+
 
 /**
  * 将VpnConnector的ConnectionStatus转为数组下标。与StatusBoxes配合使用，则可以
@@ -54,9 +57,6 @@ const StatusBoxes = [
     getElement('statusConnected'),
     getElement('statusDisconnecting')
 ]
-let cId="undefined";
-let cPsw= "undefined";
-
 /**
  * 改变vpn_login.html中显示的连接状态
  * @param {string} status 想要页面显示的连接状态
@@ -66,7 +66,6 @@ const changeDisplayedStatus = (status) => {
         element.style.display = 'none'
     })
     StatusBoxes[StatusToCode[status]].style.removeProperty('display')
-
 }
 
 /**
@@ -95,7 +94,6 @@ const changeStatus = (status) => {
     }
     changeDisplayedStatus(status)
     if (status === 'connected') {
-        savePassword();
         connectButton.disabled = true
         connectButton.style.display = 'none'
         disconnectButton.disabled = false
@@ -108,52 +106,44 @@ const changeStatus = (status) => {
     }
 }
 
-const savePassword = () => {
-    let theId = getElement('studentId').value;
-    let thePassword = getElement('password').value;
-    chrome.storage.local.set({'name': theId}, function () {
-        console.log('name is set to ' + theId);
-    });
-    chrome.storage.local.set({'password': thePassword}, function () {
-        console.log('password is set to ' + thePassword);
-    });
-};
-const getId =()=> {
-    chrome.storage.local.get(['name'], (result) => {
-        cId=result.name;
-    });
-
-}
-const getPassword =()=> {
-    chrome.storage.local.get(['password'], (result) =>{
-        cPsw=result.password;
-    });
-
+const saveLoginInfo = () => {
+    if (rememberLoginInfo) {
+        let theId = getElement('studentId').value
+        let thePassword = getElement('password').value
+        chrome.storage.local.set({ 'name': theId })
+        chrome.storage.local.set({ 'password': thePassword })
+    }
 }
 
- nameInput.addEventListener('input',()=>{
-     getId();
-     getPassword();
-     if(getElement('studentId').value===cId) {
-         getElement('password').value=cPsw;
-     }
-})
+const getLocalLoginInfo = () => {
+    chrome.storage.local.get(['rememberMe'], (result) => {
+        rememberLoginInfo = result.rememberMe
+        rememberMeCheckbox.checked = rememberLoginInfo
+        if (rememberLoginInfo) {
+            chrome.storage.local.get(['name', 'password'], (result) => {
+                if (result.name !== null && result.password !== null) {
+                    getElement('studentId').value = result.name
+                    getElement('password').value = result.password
+                }
+            })
+        }
+    })
+}
+
 /**
  * 连接按钮点击事件。向background发送登录用的数据。
  */
 connectButton.addEventListener('click', () => {
     changeStatus('connecting')
-    let loginInfo;
-    loginInfo = {
+    let loginInfo = {
         id: getElement('studentId').value,
         pwd: getElement('password').value
-    };
+    }
     chrome.runtime.sendMessage(msg('login', loginInfo), (response) => {
         if (response.msg === 'invalid') {
             changeStatus('not_connected')
             alert('请检查用户名是否输入正确')
         }
-
     })
 })
 
@@ -167,6 +157,15 @@ disconnectButton.addEventListener('click', () => {
 })
 
 
+rememberMeCheckbox.addEventListener('click', () => {
+    rememberLoginInfo = rememberMeCheckbox.checked
+    chrome.storage.local.set({ 'rememberMe': rememberLoginInfo })
+    if (rememberLoginInfo) {
+        chrome.storage.local.set({ 'name': null })
+        chrome.storage.local.set({ 'password': null })
+    }
+})
+
 /**
  * 接收background消息的监听器。
  * @param {{type:string,content:any}} message 
@@ -177,7 +176,10 @@ const onMessageListener = (message, sender, sendResponse) => {
     if (message.type === 'change_status') {
         changeStatus(message.content.changeTo)
     }
-    if (message.content.reason === 'login failed') {
+    if (message.content.reason === 'login successful') {
+        saveLoginInfo()
+    }
+    else if (message.content.reason === 'login failed') {
         alert('连接失败，请检查密码')
     }
 }
@@ -191,4 +193,5 @@ document.addEventListener('DOMContentLoaded', () => {
     queryConnectionStatus(() => {
         changeStatus(ConnectionStatus)
     })
+    getLocalLoginInfo()
 })
