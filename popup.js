@@ -86,8 +86,9 @@ const queryConnectionStatus = (extraFunction) => {
  * @param {string} status 想要切换的连接状态
  */
 const changeStatus = (status) => {
+    console.info('修改连接状态为: ' + status)
     if (status === null) {
-        alert('Connection Status is null.')
+        console.info('Connection Status is null.')
         return
     }
     changeDisplayedStatus(status)

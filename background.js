@@ -14,28 +14,58 @@ const msg = (type, content) => {
     }
 }
 
+/**
+ * 隐藏密码
+ * @param {string} password
+ */
+const wrapPassword = (password) => {
+    if (HidePassword) {
+        return `<password len=${password.length}>`
+    }
+    return password
+}
+
+
 class VpnConnector {
 
-    id = ''
-    pwd = ''
-    postData = ''
-    cookies = null
-    static ConnectionStatus = 'not_connected'
     static LoginUrl = 'https://vpn.bjut.edu.cn/prx/000/http/localhost/login'
     static LogoutUrl = 'https://vpn.bjut.edu.cn/prx/000/http/localhost/logout'
 
     constructor() {
+        console.info('VpnConnector created')
+        this._id = ''
+        this._pwd = ''
+        this._postData = ''
+        this._ConnectionStatus = 'not_connected'
     }
+
+    get postData() {
+        return this._postData
+    }
+
+    get ConnectionStatus() {
+        console.info('VpnConnector连接状态为: ' + this._ConnectionStatus)
+        return this._ConnectionStatus
+    }
+
+    set ConnectionStatus(s) {
+        console.info('VpnConnector连接状态修改为: ' + s)
+        this._ConnectionStatus = s
+    }
+
     /**
      * 设置登录信息
      * @param {string} loginId 
      * @param {string} password 
      */
     setLoginInfo(loginId, password) {
-        this.id = loginId
-        this.pwd = password
-        this.postData = `method=&uname=${this.id}&pwd1=${this.pwd}&pwd2=
-            &pwd=${this.pwd}&submitbutton=%E7%99%BB%E5%BD%95`
+        console.info('设置登录信息')
+        console.info('  用户名: ' + loginId)
+        console.info('  密码: ' + wrapPassword(password))
+        this._id = loginId
+        this._pwd = password
+        this._postData = `method=&uname=${this._id}&pwd1=${this._pwd}&pwd2=
+            &pwd=${this._pwd}&submitbutton=%E7%99%BB%E5%BD%95`
     }
     /**
      * 生成以 https://vpn.bjut.edu.cn/prx/000/ 为前缀的重定向链接
@@ -47,7 +77,8 @@ class VpnConnector {
             if (redirectUrl === url) {
                 redirectUrl = url.replace(/^https:\/\//, 'https://vpn.bjut.edu.cn/prx/000/https/')
             }
-            alert(redirectUrl)
+            console.info('原url: ' + url)
+            console.info('重定向至: ' + redirectUrl)
             return redirectUrl
         }
     }
@@ -56,30 +87,31 @@ class VpnConnector {
      * 告知popup更改连接状态,更改为VpnConnector.ConnectionStatus
      * @param {string} reason 更改原因
      */
-    static announceStatusChanged(reason) {
+    announceStatusChanged(reason) {
+        console.info(`请求修改popup页面状态为: ${this.ConnectionStatus}, 因为: ${reason}`)
         chrome.runtime.sendMessage(msg('change_status', {
-            changeTo: VpnConnector.ConnectionStatus,
+            changeTo: this.ConnectionStatus,
             reason: reason
         }))
     }
 
     tryConnect() {
-        let postData = this.postData
+        console.info('开始连接vpn')
         let request = new XMLHttpRequest()
-        VpnConnector.ConnectionStatus = 'connecting'
+        this.ConnectionStatus = 'connecting'
         request.open('POST', VpnConnector.LoginUrl, true)
         request.onreadystatechange = () => {
             if (request.readyState === 4) {
                 if (request.responseURL.indexOf('welcome') !== -1) {
-                    VpnConnector.ConnectionStatus = 'connected'
-                    VpnConnector.announceStatusChanged('login successful')
+                    this.ConnectionStatus = 'connected'
+                    this.announceStatusChanged('login successful')
                 } else {
-                    VpnConnector.ConnectionStatus = 'not_connected'
-                    VpnConnector.announceStatusChanged('login failed')
+                    this.ConnectionStatus = 'not_connected'
+                    this.announceStatusChanged('login failed')
                 }
             }
         }
-        request.send(postData)
+        request.send(this.postData)
     }
 
     tryDisconnect() {
@@ -88,9 +120,8 @@ class VpnConnector {
         request.open('GET', VpnConnector.LogoutUrl, true)
         request.onreadystatechange = () => {
             if (request.readyState === 4) {
-                alert(request.responseURL)
-                VpnConnector.ConnectionStatus = 'not_connected'
-                VpnConnector.announceStatusChanged('logout successful')
+                this.ConnectionStatus = 'not_connected'
+                this.announceStatusChanged('logout successful')
             }
         }
         request.send()
@@ -118,6 +149,7 @@ const handleLogin = (content) => {
         connector.tryConnect()
         return 'posted'
     } else {
+        console.info('用户名错误，拒绝尝试连接')
         return 'invalid'
     }
 }
@@ -128,7 +160,7 @@ const handleLogin = (content) => {
  */
 const handleQuery = (content) => {
     if (content.what === 'connection status') {
-        return VpnConnector.ConnectionStatus
+        return connector.ConnectionStatus
     }
     return `cannot query content: ${content.what}`
 }
@@ -166,7 +198,7 @@ chrome.runtime.onMessage.addListener(onMessageListener)
  * 在请求发生前调用，重定向链接。
  */
 const onBeforeRequestListener = (detail) => {
-    if (VpnConnector.ConnectionStatus !== 'connected') {
+    if (connector.ConnectionStatus !== 'connected') {
         return null
     }
     return {
@@ -181,7 +213,9 @@ chrome.webRequest.onBeforeRequest.addListener(
     ['blocking']
 )
 
+const HidePassword = true
 let connector = null
 document.addEventListener('DOMContentLoaded', () => {
+    console.info('日志是否隐藏密码: ' + HidePassword);
     connector = new VpnConnector()
 })
