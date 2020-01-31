@@ -109,17 +109,34 @@ const changeStatus = (status) => {
  */
 connectButton.addEventListener('click', () => {
     changeStatus('connecting')
-    let loginInfo = {
-        id: getElement('studentId').value,
-        pwd: getElement('password').value
+    let loginInfo;
+    let password;
+    let Id;
+    password=getPassword();
+    Id=getId();
+    if (password===undefined) {
+        console.log('id currently is ' + Id);
+        loginInfo = {
+            id: getElement('studentId').value,
+            pwd: getElement('password').value
+        };
+    }
+    else
+    {
+        loginInfo = {
+            id: getId(),
+            pwd: getPassword()
+        };
     }
     chrome.runtime.sendMessage(msg('login', loginInfo), (response) => {
         if (response.msg === 'invalid') {
             changeStatus('not_connected')
             alert('请检查用户名是否输入正确')
         }
+        else savePassword();
     })
 })
+
 
 /**
  * 断开按钮点击事件。
@@ -128,6 +145,35 @@ disconnectButton.addEventListener('click', () => {
     changeStatus('disconnecting')
     chrome.runtime.sendMessage(msg('logout', null))
 })
+let getPassword;
+let getId;
+let savePassword;
+savePassword = () => {
+    let theId = getElement('studentId').value;
+    let thePassword = getElement('password').value;
+        chrome.storage.local.set({'name': theId}, function () {
+            console.log('name is set to ' + theId);
+        });
+        chrome.storage.local.set({'password': thePassword}, function () {
+            console.log('password is set to ' + thePassword);
+        });
+};
+getId =()=> {
+    let id;
+    chrome.storage.local.get(['name'], function (id) {
+        console.log('name currently is ' + id.name);
+        return id.name;
+    });
+
+}
+getPassword =()=> {
+    let  psw;
+    chrome.storage.local.get(['password'], function (psw) {
+        console.log('password currently is ' + psw.password);
+        return psw.password;
+    });
+
+}
 
 /**
  * 接收background消息的监听器。
