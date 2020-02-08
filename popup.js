@@ -71,14 +71,14 @@ const changeDisplayedStatus = (status) => {
 /**
  * 向background获取Vpn的连接状态，并根据获得的状态改变网页中显示的状态
  * response = { msg: any }
- * @param {Function} extraFunction 获得response之后的动作
+ * @returns {Promise} 返回Promise，以便于获取状态后的下一步操作
  */
-const queryConnectionStatus = (extraFunction) => {
-    chrome.runtime.sendMessage(msg('query', { what: 'connection status' }), (response) => {
-        ConnectionStatus = response.msg
-        if (extraFunction) {
-            extraFunction()
-        }
+const queryConnectionStatus = () => {
+    return new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage(msg('query', { what: 'connection status' }), (response) => {
+            ConnectionStatus = response.msg
+            resolve()
+        })
     })
 }
 
@@ -190,8 +190,7 @@ chrome.runtime.onMessage.addListener(onMessageListener)
  * 向DOM添加监听器，DOM加载完成时向background查询Vpn连接状态
  */
 document.addEventListener('DOMContentLoaded', () => {
-    queryConnectionStatus(() => {
-        changeStatus(ConnectionStatus)
-    })
+    queryConnectionStatus()
+        .then(() => changeStatus(ConnectionStatus))
     getLocalLoginInfo()
 })
