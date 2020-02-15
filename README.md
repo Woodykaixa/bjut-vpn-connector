@@ -15,14 +15,14 @@
 本扩展可以安装在Google Chrome浏览器以及Chromium内核浏览器（比如新版Edge以及一众国产浏览器）但是国产浏览器一般都有IE内核，直接访问vpn.bjut.edu.cn是不是没问题？我没试过）(那这个插件好像就没用了)
 
 ### 安装方法
-![](./readme_img/readme01.png)
+1. 运行`npm run pack`打包生成js文件。
+2. ![](./readme_img/readme01.png)
 
-![](readme_img/readme02.png)
+3. ![](readme_img/readme02.png)
 
 ## 如何使用
 点击浏览器地址栏右侧图标（深色主题下可能看不清，鼠标移上去会有提示），然后输入学号和校园网密码，点击连接。
 ![](readme_img/readme03.png)
-插件会弹出一些消息提示（而且没有关闭按钮），是我测试用的，按回车即可关闭。
 插件上显示已连接，则可以使用。
 
 ## 版权许可
