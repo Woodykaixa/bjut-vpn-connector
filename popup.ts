@@ -1,33 +1,20 @@
+import * as common from "./common"
 /**
  * 通过id获取HTML元素，有点像JQuery那个$。但是想到没准以后要用JQuery，所以
  * 换了个名字。直接调这个函数能少写一笔是一笔。
- * @param {string} id 
+ * @param id 
  */
-const getElement = (id) => {
+const getElement = (id: string) => {
     return document.getElementById(id)
 }
 
-/**
- * 本函数返回在 @file background.js 和 @file popup.js 之间通信使用的
- * 消息对象。由于import引发了以下错误:
- *   Uncaught SyntaxError: Cannot use import statement outside a module
- * 加上函数的实现极其简单，我懒得配置webpack，所以就在两个文件中定义了相同的
- * 函数。
- * @param {string} type 消息类型
- * @param {any} content 消息内容
- */
-const msg = (type, content) => {
-    return {
-        type: type,
-        content: content
-    }
-}
-let nameInput = getElement("studentId")
-let connectButton = getElement('connect')
-let disconnectButton = getElement('disconnect')
-let rememberMeCheckbox = getElement('rememberMe')
-let ConnectionStatus = null
-let rememberLoginInfo = null
+let nameInput = <HTMLInputElement>getElement("studentId")
+let pwdInput = <HTMLInputElement>getElement('password')
+let connectButton = <HTMLButtonElement>getElement('connect')
+let disconnectButton = <HTMLButtonElement>getElement('disconnect')
+let rememberMeCheckbox = <HTMLInputElement>getElement('rememberMe')
+let ConnectionStatus: string = null
+let rememberLoginInfo: boolean = null
 
 
 /**
@@ -57,11 +44,12 @@ const StatusBoxes = [
     getElement('statusConnected'),
     getElement('statusDisconnecting')
 ]
+
 /**
  * 改变vpn_login.html中显示的连接状态
- * @param {string} status 想要页面显示的连接状态
+ * @param status 想要页面显示的连接状态
  */
-const changeDisplayedStatus = (status) => {
+const changeDisplayedStatus = (status: string) => {
     StatusBoxes.forEach((element) => {
         element.style.display = 'none'
     })
@@ -71,11 +59,11 @@ const changeDisplayedStatus = (status) => {
 /**
  * 向background获取Vpn的连接状态，并根据获得的状态改变网页中显示的状态
  * response = { msg: any }
- * @returns {Promise} 返回Promise，以便于获取状态后的下一步操作
+ * @returns 返回Promise，以便于获取状态后的下一步操作
  */
-const queryConnectionStatus = () => {
+const queryConnectionStatus = (): Promise<any> => {
     return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage(msg('query', { what: 'connection status' }), (response) => {
+        chrome.runtime.sendMessage(common.msg('query', { what: 'connection status' }), (response) => {
             ConnectionStatus = response.msg
             resolve()
         })
@@ -84,9 +72,9 @@ const queryConnectionStatus = () => {
 
 /**
  * 将popup端的连接状态改变为@param status
- * @param {string} status 想要切换的连接状态
+ * @param status 想要切换的连接状态
  */
-const changeStatus = (status) => {
+const changeStatus = (status: string) => {
     console.info('修改连接状态为: ' + status)
     if (status === null) {
         console.info('Connection Status is null.')
@@ -108,8 +96,8 @@ const changeStatus = (status) => {
 
 const saveLoginInfo = () => {
     if (rememberLoginInfo) {
-        let theId = getElement('studentId').value
-        let thePassword = getElement('password').value
+        let theId = nameInput.value
+        let thePassword = pwdInput.value
         chrome.storage.local.set({ 'name': theId })
         chrome.storage.local.set({ 'password': thePassword })
     }
@@ -122,8 +110,8 @@ const getLocalLoginInfo = () => {
         if (rememberLoginInfo) {
             chrome.storage.local.get(['name', 'password'], (result) => {
                 if (result.name !== null && result.password !== null) {
-                    getElement('studentId').value = result.name
-                    getElement('password').value = result.password
+                    nameInput.value = result.name
+                    pwdInput.value = result.password
                 }
             })
         }
@@ -136,10 +124,10 @@ const getLocalLoginInfo = () => {
 connectButton.addEventListener('click', () => {
     changeStatus('connecting')
     let loginInfo = {
-        id: getElement('studentId').value,
-        pwd: getElement('password').value
+        id: nameInput.value,
+        pwd: pwdInput.value
     }
-    chrome.runtime.sendMessage(msg('login', loginInfo), (response) => {
+    chrome.runtime.sendMessage(common.msg('login', loginInfo), (response) => {
         if (response.msg === 'invalid') {
             changeStatus('not_connected')
             alert('请检查用户名是否输入正确')
@@ -153,7 +141,7 @@ connectButton.addEventListener('click', () => {
  */
 disconnectButton.addEventListener('click', () => {
     changeStatus('disconnecting')
-    chrome.runtime.sendMessage(msg('logout', null))
+    chrome.runtime.sendMessage(common.msg('logout', null))
 })
 
 
@@ -168,11 +156,11 @@ rememberMeCheckbox.addEventListener('click', () => {
 
 /**
  * 接收background消息的监听器。
- * @param {{type:string,content:any}} message 
- * @param {*} sender 
- * @param {function ({msg:any}) } sendResponse 使用这个函数回应消息
+ * @param message 
+ * @param sender 
+ * @param sendResponse 使用这个函数回应消息
  */
-const onMessageListener = (message, sender, sendResponse) => {
+const onMessageListener = (message: common.Message, sender, sendResponse: common.ResponseFunction) => {
     if (message.type === 'change_status') {
         changeStatus(message.content.changeTo)
     }
