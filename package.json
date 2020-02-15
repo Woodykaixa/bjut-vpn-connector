@@ -1,0 +1,28 @@
+{
+  "name": "bjut-vpn-connector",
+  "version": "0.7.0",
+  "description": "Help you connecting BJUT's vpn and webvpn",
+  "main": "background.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Woodykaixa/bjut-vpn-connector.git"
+  },
+  "keywords": [
+    "chrome-extension",
+    "typescript",
+    "bjut"
+  ],
+  "author": "kaixa",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Woodykaixa/bjut-vpn-connector/issues"
+  },
+  "homepage": "https://github.com/Woodykaixa/bjut-vpn-connector#readme",
+  "devDependencies": {
+    "@types/chrome": "0.0.95",
+    "typescript": "^3.7.5"
+  }
+}
