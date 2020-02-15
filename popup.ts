@@ -13,30 +13,11 @@ let pwdInput = <HTMLInputElement>getElement('password')
 let connectButton = <HTMLButtonElement>getElement('connect')
 let disconnectButton = <HTMLButtonElement>getElement('disconnect')
 let rememberMeCheckbox = <HTMLInputElement>getElement('rememberMe')
-let ConnectionStatus: string = null
+let ConnectionStatusCode: number = null
 let rememberLoginInfo: boolean = null
 
-
 /**
- * 将VpnConnector的ConnectionStatus转为数组下标。与StatusBoxes配合使用，则可以
- * 根据不同的连接状态显示不同的图片。
- */
-const StatusToCode = {
-    not_connected: 0,
-    connecting: 1,
-    connected: 2,
-    disconnecting: 3
-}
-
-/**
- * HTML中用于显示状态的元素集合。第一个是null因为未连接状态什么都不显示。第二个是正在连接的那个转圈图片。
- * 第三个是已连接的绿色对勾。与StatusToCode使用可以实现根据 VpnConnector.ConnectionStatus 获取对应的
- * HTML元素。
- * @example
- *  从background获取了当前连接状态 s
- *      let s = 'connecting'
- *      let box = StatusBoxes[StatusToCode[s]]
- *  box就是vpn_login.html中id为'statusConnecting'的元素，也就是那个转圈的。
+ * HTML中用于显示状态的元素集合。
  */
 const StatusBoxes = [
     getElement('statusNotConnected'),
@@ -49,11 +30,11 @@ const StatusBoxes = [
  * 改变vpn_login.html中显示的连接状态
  * @param status 想要页面显示的连接状态
  */
-const changeDisplayedStatus = (status: string) => {
+const changeDisplayedStatus = (status: number) => {
     StatusBoxes.forEach((element) => {
         element.style.display = 'none'
     })
-    StatusBoxes[StatusToCode[status]].style.removeProperty('display')
+    StatusBoxes[status].style.removeProperty('display')
 }
 
 /**
@@ -64,29 +45,29 @@ const changeDisplayedStatus = (status: string) => {
 const queryConnectionStatus = (): Promise<any> => {
     return new Promise((resolve, reject) => {
         chrome.runtime.sendMessage(common.msg('query', { what: 'connection status' }), (response) => {
-            ConnectionStatus = response.msg
+            ConnectionStatusCode = response.msg
             resolve()
         })
     })
 }
 
 /**
- * 将popup端的连接状态改变为@param status
- * @param status 想要切换的连接状态
+ * 将popup端的连接状态改变为statusCode对应的状态
+ * @param statusCode 想要切换的连接状态
  */
-const changeStatus = (status: string) => {
-    console.info('修改连接状态为: ' + status)
-    if (status === null) {
+const changeStatus = (statusCode: number) => {
+    console.info('修改连接状态为: code ' + statusCode)
+    if (statusCode === null) {
         console.info('Connection Status is null.')
         return
     }
-    changeDisplayedStatus(status)
-    if (status === 'connected') {
+    changeDisplayedStatus(statusCode)
+    if (statusCode === common.ConnectionStatus['connected']) {
         connectButton.disabled = true
         connectButton.style.display = 'none'
         disconnectButton.disabled = false
         disconnectButton.style.removeProperty('display')
-    } else if (status === 'not_connected') {
+    } else if (statusCode === common.ConnectionStatus['not_connected']) {
         disconnectButton.disabled = true
         disconnectButton.style.display = 'none'
         connectButton.disabled = false
@@ -126,14 +107,14 @@ const requestBackgroundAlert = (msg: string) => {
  * 连接按钮点击事件。向background发送登录用的数据。
  */
 connectButton.addEventListener('click', () => {
-    changeStatus('connecting')
+    changeStatus(common.ConnectionStatus['connecting'])
     let loginInfo = {
         id: nameInput.value,
         pwd: pwdInput.value
     }
     chrome.runtime.sendMessage(common.msg('login', loginInfo), (response) => {
         if (response.msg === 'invalid') {
-            changeStatus('not_connected')
+            changeStatus(common.ConnectionStatus['not_connected'])
             requestBackgroundAlert('请检查用户名是否输入正确')
         }
     })
@@ -144,7 +125,7 @@ connectButton.addEventListener('click', () => {
  * 断开按钮点击事件。
  */
 disconnectButton.addEventListener('click', () => {
-    changeStatus('disconnecting')
+    changeStatus(common.ConnectionStatus['disconnecting'])
     chrome.runtime.sendMessage(common.msg('logout', null))
 })
 
@@ -183,6 +164,6 @@ chrome.runtime.onMessage.addListener(onMessageListener)
  */
 document.addEventListener('DOMContentLoaded', () => {
     queryConnectionStatus()
-        .then(() => changeStatus(ConnectionStatus))
+        .then(() => changeStatus(ConnectionStatusCode))
     getLocalLoginInfo()
 })

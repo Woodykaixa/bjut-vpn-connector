@@ -17,7 +17,7 @@ class VpnConnector {
     static readonly LogoutUrl = 'https://vpn.bjut.edu.cn/prx/000/http/localhost/logout'
     private id: string
     private pwd: string
-    private ConnectionStatus: string
+    private ConnectionStatus: number
     private postData: string
 
     constructor() {
@@ -25,17 +25,18 @@ class VpnConnector {
         this.id = ''
         this.pwd = ''
         this.postData = ''
-        this.ConnectionStatus = 'not_connected'
+        this.ConnectionStatus = common.ConnectionStatus['not_connected']
     }
 
     public getConnectionStatus() {
-        console.info('VpnConnector连接状态为: ' + this.ConnectionStatus)
+        console.info(`VpnConnector连接状态为: ${common.ConnectionStatus[this.ConnectionStatus]},
+            状态码: ${this.ConnectionStatus}`)
         return this.ConnectionStatus
     }
 
-    public setConnectionStatus(s: string) {
-        console.info('VpnConnector连接状态修改为: ' + s)
-        this.ConnectionStatus = s
+    public setConnectionStatus(statusCode: number) {
+        console.info('VpnConnector连接状态修改为: ' + statusCode)
+        this.ConnectionStatus = statusCode
     }
 
     /**
@@ -70,7 +71,7 @@ class VpnConnector {
      * @param reason 更改原因
      */
     announceStatusChanged(reason: string) {
-        console.info(`请求修改popup页面状态为: ${this.setConnectionStatus}, 因为: ${reason}`)
+        console.info(`请求修改popup页面状态为: code ${this.ConnectionStatus}, 因为: ${reason}`)
         chrome.runtime.sendMessage(common.msg('change_status', {
             changeTo: this.ConnectionStatus,
             reason: reason
@@ -80,15 +81,15 @@ class VpnConnector {
     tryConnect() {
         console.info('开始连接vpn')
         let request = new XMLHttpRequest()
-        this.setConnectionStatus('connecting')
+        this.setConnectionStatus( common.ConnectionStatus['connecting'])
         request.open('POST', VpnConnector.LoginUrl, true)
         request.onreadystatechange = () => {
             if (request.readyState === 4) {
                 if (request.responseURL.indexOf('welcome') !== -1) {
-                    this.setConnectionStatus('connected')
+                    this.setConnectionStatus( common.ConnectionStatus['connected'])
                     this.announceStatusChanged('login successful')
                 } else {
-                    this.setConnectionStatus('not_connected')
+                    this.setConnectionStatus( common.ConnectionStatus['not_connected'])
                     this.announceStatusChanged('login failed')
                 }
             }
@@ -97,12 +98,12 @@ class VpnConnector {
     }
 
     tryDisconnect() {
-        this.setConnectionStatus('disconnecting')
+        this.setConnectionStatus( common.ConnectionStatus['disconnecting'])
         let request = new XMLHttpRequest()
         request.open('GET', VpnConnector.LogoutUrl, true)
         request.onreadystatechange = () => {
             if (request.readyState === 4) {
-                this.setConnectionStatus('not_connected')
+                this.setConnectionStatus( common.ConnectionStatus['not_connected'])
                 this.announceStatusChanged('logout successful')
             }
         }
@@ -186,7 +187,7 @@ chrome.runtime.onMessage.addListener(onMessageListener)
  */
 const onBeforeRequestListener = (detail: chrome.webRequest.WebRequestBodyDetails)
     : chrome.webRequest.BlockingResponse | void => {
-    if (connector.getConnectionStatus() !== 'connected') {
+    if (connector.getConnectionStatus() !== common.ConnectionStatus['connected']) {
         return null
     }
     return {

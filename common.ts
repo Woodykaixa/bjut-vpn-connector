@@ -33,3 +33,10 @@ export interface ResponseMessage {
 export interface ResponseFunction {
     (response?: ResponseMessage): void
 }
+
+export enum ConnectionStatus {
+    not_connected,
+    connecting,
+    connected,
+    disconnecting
+}
