@@ -63,14 +63,10 @@ const changeStatus = (statusCode: number) => {
     }
     changeDisplayedStatus(statusCode)
     if (statusCode === common.ConnectionStatus['connected']) {
-        connectButton.disabled = true
         connectButton.style.display = 'none'
-        disconnectButton.disabled = false
         disconnectButton.style.removeProperty('display')
     } else if (statusCode === common.ConnectionStatus['not_connected']) {
-        disconnectButton.disabled = true
         disconnectButton.style.display = 'none'
-        connectButton.disabled = false
         connectButton.style.removeProperty('display')
     }
 }
@@ -159,6 +155,25 @@ const onMessageListener = (message: common.Message, sender, sendResponse: common
 
 chrome.runtime.onMessage.addListener(onMessageListener)
 
+const createNotification = () => {
+    chrome.notifications.create('AboutExtension', {
+        type: 'basic',
+        iconUrl: './img/about.png',
+        title: '关于本插件',
+        message: '本插件仅限于连接教务网站以及图书馆网站使用，连接my网请使用 https://webvpn.bjut.edu.cn',
+        contextMessage: '您可以在设置页面启用自动转跳功能转跳到webvpn页面',
+        buttons: [
+            { title: '不再提示' }
+        ]
+    })
+}
+
+const buttonClickListener = (notificationId: string, buttonIndex: number) => {
+    
+}
+
+chrome.notifications.onButtonClicked.addListener(buttonClickListener)
+
 /**
  * 向DOM添加监听器，DOM加载完成时向background查询Vpn连接状态
  */
@@ -166,4 +181,5 @@ document.addEventListener('DOMContentLoaded', () => {
     queryConnectionStatus()
         .then(() => changeStatus(ConnectionStatusCode))
     getLocalLoginInfo()
+    createNotification()
 })

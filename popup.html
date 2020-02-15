@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta lang="zh">
-
+    <!--
     <style>
         header {
             display: flex;
@@ -30,42 +30,78 @@
             margin-left: 10px;
         }
     </style>
+-->
+    <link rel="stylesheet" href="./css/weui.min.css" />
 </head>
 
-<body>
-    <section>
-        <header id="statusBox">
-            <div id="statusNotConnected">
-                <img src="./img/not_connected.png">
-                <h3>VPN未连接</h3>
+<body ontouchstart style="width: 350px;">
+    <div class="weui-form">
+        <div class="weui-form__text-area">
+            <div class="icon-box" id="statusNotConnected">
+                <i class="weui-icon-cancel weui-icon_msg-primary"></i>
+                <div class="icon-box__ctn">
+                    <h3 class="icon-box__title">VPN未连接</h3>
+                </div>
             </div>
-            <div id="statusConnecting" style="display: none;">
+            <div class="icon-box" id="statusConnecting" style="display: none;">
                 <img src="./img/loading.gif">
-                <h3>正在连接...</h3>
+                <div class="icon-box__ctn">
+                    <h3>正在连接...</h3>
+                </div>
             </div>
-            <div id="statusConnected" style="display: none;">
-                <img src="./img/connected.png">
-                <h3>VPN已连接</h3>
+            <div class="icon-box" id="statusConnected" style="display: none;">
+                <i class="weui-icon-success-circle weui-icon_msg-primary"></i>
+                <div class="icon-box__ctn">
+                    <h3 class="icon-box__title">VPN已连接</h3>
+                </div>
             </div>
-            <div id="statusDisconnecting" style="display: none;">
+            <div class="icon-box" id="statusDisconnecting" style="display: none;">
                 <img src="./img/loading.gif">
-                <h3>正在断开...</h3>
+                <div class="icon-box__ctn">
+                    <h3>正在断开...</h3>
+                </div>
             </div>
-        </header>
-        <div class="infoArea">
-            <label>用户名</label><br>
-            <input id="studentId" type="text">
         </div>
-        <div class="infoArea">
-            <label>密 码</label><br>
-            <input id="password" type="password"><br>
+        <div class="weui-form__control-area">
+            <div class="weui-cells__group weui-cells__group_form">
+                <div class="weui-cells__title">请填写您的登录信息</div>
+                <div class="weui-cells weui-cells_form">
+                    <div class="weui-cell weui-cell_active">
+                        <div class="weui-cell__hd">
+                            <label class="weui-label">用户名</label>
+                        </div>
+                        <div class="weui-cell__bd weui-flex">
+                            <input id="studentId" class="weui-input" placeholder="请输入8位学号" type="text">
+                        </div>
+                    </div>
+                    <div class="weui-cell weui-cell_active">
+                        <div class="weui-cell__hd">
+                            <label class="weui-label">密码</label>
+                        </div>
+                        <div class="weui-cell__bd weui-flex">
+                            <input id="password" class="weui-input" placeholder="请输入密码" type="password"><br>
+                        </div>
+                    </div>
+                    <div class="weui-cells weui-cells_checkbox">
+                        <label class="weui-cell weui-cell-active weui-check__label" for="rememberMe">
+                            <div class="weui-cell__hd">
+                                <input id="rememberMe" class="weui-check" type="checkbox">
+                                <i class="weui-icon-checked"></i>
+                            </div>
+                            <div class="weui-cell__bd">
+                                <p>记住我</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="infoArea">
-            <label style="padding-right: 10px;"><input id="rememberMe" type="checkbox">记住我</label>
-            <button id="connect" type="submit">连接</button>
-            <button id="disconnect" type="submit" style="display: none;" disabled=true>断开</button>
+        <div class="weui-form__opr-area">
+            <button id="connect" class="weui-btn weui-btn_primary">连接</button>
+            <button id="disconnect" style="display: none;"
+                class="weui-btn weui-btn_primary">断开</button>
         </div>
-    </section>
+    </div>
 </body>
 <script src="./popup.js">
 </script>

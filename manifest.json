@@ -18,6 +18,7 @@
     "webRequest",
     "webRequestBlocking",
     "storage",
-    "*://*.bjut.edu.cn/*"
+    "*://*.bjut.edu.cn/*",
+    "notifications"
   ]
 }
