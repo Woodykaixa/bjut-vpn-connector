@@ -23,6 +23,7 @@
   "homepage": "https://github.com/Woodykaixa/bjut-vpn-connector#readme",
   "devDependencies": {
     "@types/chrome": "0.0.95",
-    "typescript": "^3.7.5"
+    "typescript": "^3.7.5",
+    "webpack": "^4.41.6"
   }
 }
