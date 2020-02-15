@@ -155,10 +155,15 @@ const handleLogout = () => {
     return 'posted'
 }
 
+const handleBackgroundAlert = (content: string) => {
+    alert(content)
+}
+
 const handler = {
     login: handleLogin,
     query: handleQuery,
-    logout: handleLogout
+    logout: handleLogout,
+    alert: handleBackgroundAlert
 }
 
 /**

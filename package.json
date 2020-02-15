@@ -1,7 +1,7 @@
 {
   "name": "bjut-vpn-connector",
-  "version": "0.7.0",
-  "description": "Help you connecting BJUT's vpn and webvpn",
+  "version": "0.7.1",
+  "description": "Help you connecting vpn and WebVpn of Beijing University of Technology",
   "scripts": {
     "pack": "webpack --config webpack.config.js"
   },

@@ -118,6 +118,10 @@ const getLocalLoginInfo = () => {
     })
 }
 
+const requestBackgroundAlert = (msg: string) => {
+    chrome.runtime.sendMessage(common.msg('alert', msg))
+}
+
 /**
  * 连接按钮点击事件。向background发送登录用的数据。
  */
@@ -130,7 +134,7 @@ connectButton.addEventListener('click', () => {
     chrome.runtime.sendMessage(common.msg('login', loginInfo), (response) => {
         if (response.msg === 'invalid') {
             changeStatus('not_connected')
-            alert('请检查用户名是否输入正确')
+            requestBackgroundAlert('请检查用户名是否输入正确')
         }
     })
 })
@@ -168,7 +172,7 @@ const onMessageListener = (message: common.Message, sender, sendResponse: common
         saveLoginInfo()
     }
     else if (message.content.reason === 'login failed') {
-        alert('连接失败，请检查密码')
+        requestBackgroundAlert('连接失败，请检查密码')
     }
 }
 
