@@ -11,10 +11,18 @@ const wrapPassword = (password: string) => {
     return password
 }
 
+
+enum RedirectionType {
+    vpnRedirect,
+    autoRedirect,
+    noRedirect
+}
+
 class VpnConnector {
 
     static readonly LoginUrl = 'https://vpn.bjut.edu.cn/prx/000/http/localhost/login'
     static readonly LogoutUrl = 'https://vpn.bjut.edu.cn/prx/000/http/localhost/logout'
+    static readonly WebVpnUrl = 'https://webvpn.bjut.edu.cn'
     private id: string
     private pwd: string
     private ConnectionStatus: number
@@ -51,20 +59,6 @@ class VpnConnector {
         this.postData = `method=&uname=${this.id}&pwd1=${this.pwd}&pwd2=
             &pwd=${this.pwd}&submitbutton=%E7%99%BB%E5%BD%95`
     }
-    /**
-     * 生成以 https://vpn.bjut.edu.cn/prx/000/ 为前缀的重定向链接
-     */
-    static makeRedirectUrl(url: string) {
-        if (/^https?:\/\/(?!vpn)[^.]+\.bjut\.edu\.cn\/.*$/.test(url)) {
-            let redirectUrl = url.replace(/^http:\/\//, 'https://vpn.bjut.edu.cn/prx/000/http/')
-            if (redirectUrl === url) {
-                redirectUrl = url.replace(/^https:\/\//, 'https://vpn.bjut.edu.cn/prx/000/https/')
-            }
-            console.info('原url: ' + url)
-            console.info('重定向至: ' + redirectUrl)
-            return redirectUrl
-        }
-    }
 
     /**
      * 告知popup更改连接状态,更改为VpnConnector.ConnectionStatus
@@ -81,15 +75,15 @@ class VpnConnector {
     tryConnect() {
         console.info('开始连接vpn')
         let request = new XMLHttpRequest()
-        this.setConnectionStatus( common.ConnectionStatus['connecting'])
+        this.setConnectionStatus(common.ConnectionStatus['connecting'])
         request.open('POST', VpnConnector.LoginUrl, true)
         request.onreadystatechange = () => {
             if (request.readyState === 4) {
                 if (request.responseURL.indexOf('welcome') !== -1) {
-                    this.setConnectionStatus( common.ConnectionStatus['connected'])
+                    this.setConnectionStatus(common.ConnectionStatus['connected'])
                     this.announceStatusChanged('login successful')
                 } else {
-                    this.setConnectionStatus( common.ConnectionStatus['not_connected'])
+                    this.setConnectionStatus(common.ConnectionStatus['not_connected'])
                     this.announceStatusChanged('login failed')
                 }
             }
@@ -98,12 +92,12 @@ class VpnConnector {
     }
 
     tryDisconnect() {
-        this.setConnectionStatus( common.ConnectionStatus['disconnecting'])
+        this.setConnectionStatus(common.ConnectionStatus['disconnecting'])
         let request = new XMLHttpRequest()
         request.open('GET', VpnConnector.LogoutUrl, true)
         request.onreadystatechange = () => {
             if (request.readyState === 4) {
-                this.setConnectionStatus( common.ConnectionStatus['not_connected'])
+                this.setConnectionStatus(common.ConnectionStatus['not_connected'])
                 this.announceStatusChanged('logout successful')
             }
         }
@@ -116,6 +110,18 @@ class VpnConnector {
      */
     static isValidId(loginId: string) {
         return /^\d{8}$/.test(loginId)
+    }
+
+    static getRedirectionType(url: string) {
+        if (/^https:\/\/my(svr)?\.bjut\.edu\.cn\/.*$/.test(url)) {
+            return RedirectionType.autoRedirect
+        }
+        else if (/^https?:\/\/(?!vpn)[^.]+\.bjut\.edu\.cn\/.*$/.test(url) &&
+            url.indexOf('webvpn') === -1) {
+            return RedirectionType.vpnRedirect
+        } else {
+            return RedirectionType.noRedirect
+        }
     }
 
 }
@@ -160,12 +166,33 @@ const handleBackgroundAlert = (content: string) => {
     alert(content)
 }
 
+const handleChangeOption = (content: any) => {
+    if (content.option === 'AutoRedirectOn') {
+        autoRedirectOn = content.changeTo
+    }
+}
+
 const handler = {
     login: handleLogin,
     query: handleQuery,
     logout: handleLogout,
-    alert: handleBackgroundAlert
+    alert: handleBackgroundAlert,
+    optionsChanged: handleChangeOption
 }
+
+/**
+ * 生成以 https://vpn.bjut.edu.cn/prx/000/ 为前缀的重定向链接
+ */
+const makeVpnRedirectUrl = (url: string) => {
+    let redirectUrl = url.replace(/^http:\/\//, 'https://vpn.bjut.edu.cn/prx/000/http/')
+    if (redirectUrl === url) {
+        redirectUrl = url.replace(/^https:\/\//, 'https://vpn.bjut.edu.cn/prx/000/https/')
+    }
+    console.info('原url: ' + url)
+    console.info('重定向至: ' + redirectUrl)
+    return redirectUrl
+}
+
 
 /**
  * 接收popup消息的监听器。
@@ -187,13 +214,40 @@ chrome.runtime.onMessage.addListener(onMessageListener)
  */
 const onBeforeRequestListener = (detail: chrome.webRequest.WebRequestBodyDetails)
     : chrome.webRequest.BlockingResponse | void => {
-    if (connector.getConnectionStatus() !== common.ConnectionStatus['connected']) {
-        return null
+    const type = VpnConnector.getRedirectionType(detail.url)
+    switch (type) {
+        case RedirectionType.noRedirect:
+            alert(`no redirect: ${detail.url}`)
+            return null
+        case RedirectionType.vpnRedirect:
+            if (connector.getConnectionStatus() !== common.ConnectionStatus['connected']) {
+                alert(`vpn not connect, no redirect: ${detail.url}`)
+                return null
+            }
+            alert(`vpn redirect: ${detail.url} to ${makeVpnRedirectUrl(detail.url)}`)
+            return {
+                redirectUrl: makeVpnRedirectUrl(detail.url)
+            }
+        case RedirectionType.autoRedirect:
+            let request = new XMLHttpRequest()
+            try {
+                request.open('GET', 'https://my.bjut.edu.cn', false)
+                request.send()
+                if (request.getResponseHeader('Content-Length') !== '0') {
+                    alert(`auto redirect: ${detail.url}`)
+                    return {
+                        redirectUrl: VpnConnector.WebVpnUrl
+                    }
+                }
+                alert(`auto redirect in school network, so no redirect: ${detail.url}`)
+                return null
+            } catch (e) {
+                alert(`catch error, auto redirect: ${detail.url}`)
+                return {
+                    redirectUrl: VpnConnector.WebVpnUrl
+                }
+            }
     }
-    return {
-        redirectUrl: VpnConnector.makeRedirectUrl(detail.url)
-    }
-
 }
 
 chrome.webRequest.onBeforeRequest.addListener(
@@ -204,7 +258,9 @@ chrome.webRequest.onBeforeRequest.addListener(
 
 const HidePassword = true
 let connector: VpnConnector = null
-document.addEventListener('DOMContentLoaded', () => {
-    console.info('日志是否隐藏密码: ' + HidePassword);
-    connector = new VpnConnector()
+let autoRedirectOn: boolean = false
+console.info('日志是否隐藏密码: ' + HidePassword)
+connector = new VpnConnector()
+chrome.storage.local.get(['AutoRedirectOn'], (result) => {
+    autoRedirectOn = result.AutoRedirectOn
 })

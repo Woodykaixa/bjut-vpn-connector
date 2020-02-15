@@ -13,8 +13,9 @@ let pwdInput = <HTMLInputElement>getElement('password')
 let connectButton = <HTMLButtonElement>getElement('connect')
 let disconnectButton = <HTMLButtonElement>getElement('disconnect')
 let rememberMeCheckbox = <HTMLInputElement>getElement('rememberMe')
-let ConnectionStatusCode: number = null
+let connectionStatusCode: number = null
 let rememberLoginInfo: boolean = null
+let autoRedirectOn: boolean = false
 
 /**
  * HTML中用于显示状态的元素集合。
@@ -45,7 +46,7 @@ const changeDisplayedStatus = (status: number) => {
 const queryConnectionStatus = (): Promise<any> => {
     return new Promise((resolve, reject) => {
         chrome.runtime.sendMessage(common.msg('query', { what: 'connection status' }), (response) => {
-            ConnectionStatusCode = response.msg
+            connectionStatusCode = response.msg
             resolve()
         })
     })
@@ -155,31 +156,32 @@ const onMessageListener = (message: common.Message, sender, sendResponse: common
 
 chrome.runtime.onMessage.addListener(onMessageListener)
 
-const createNotification = () => {
-    chrome.notifications.create('AboutExtension', {
-        type: 'basic',
-        iconUrl: './img/about.png',
-        title: '关于本插件',
-        message: '本插件仅限于连接教务网站以及图书馆网站使用，连接my网请使用 https://webvpn.bjut.edu.cn',
-        contextMessage: '您可以在设置页面启用自动转跳功能转跳到webvpn页面',
-        buttons: [
-            { title: '不再提示' }
-        ]
-    })
+const createNotification = (PopupNotificationOn: boolean) => {
+    if (PopupNotificationOn === true) {
+        chrome.notifications.create('AboutExtension', {
+            type: 'basic',
+            iconUrl: './img/about.png',
+            title: '关于本插件',
+            message: '本插件仅限于连接教务网站以及图书馆网站使用，连接my网请使用我校WebVpn',
+            contextMessage: '您可以在设置页面启用自动转跳功能转跳到WebVpn页面',
+            buttons: [
+                { title: '不再提示' }
+            ]
+        })
+    }
 }
 
 const buttonClickListener = (notificationId: string, buttonIndex: number) => {
-    
+    chrome.storage.local.set({ PopupNotificationOn: false })
 }
 
 chrome.notifications.onButtonClicked.addListener(buttonClickListener)
 
-/**
- * 向DOM添加监听器，DOM加载完成时向background查询Vpn连接状态
- */
 document.addEventListener('DOMContentLoaded', () => {
     queryConnectionStatus()
-        .then(() => changeStatus(ConnectionStatusCode))
+        .then(() => changeStatus(connectionStatusCode))
     getLocalLoginInfo()
-    createNotification()
+    chrome.storage.local.get(['PopupNotificationOn'], (result) => {
+        createNotification(result.PopupNotificationOn)
+    })
 })

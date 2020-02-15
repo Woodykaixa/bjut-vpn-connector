@@ -5,12 +5,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>BJUT vpn connector选项</title>
-    <script src="./options.js"></script>
+    <meta lang="zh">
+    <link rel="stylesheet" href="./css/weui.min.css" />
+    <style>
+        .my-weui-panel__hd {
+            padding: 16px 16px 13px;
+            color: rgba(0, 0, 0, .9);
+            font-size: 15px;
+            font-weight: 700;
+            position: relative
+        }
+    </style>
+    <title>关于BJUT Vpn Connector</title>
 </head>
 
-<body>
-    尚不可用
+<body ontouchstart>
+    <div class="page">
+        <div class="page__hd">
+            <h1 class="page__title">BJUT Vpn Connector 选项</h1>
+            <p class="page__desc">&nbsp;</p>
+        </div>
+        <div class="page__bd">
+            <div class="weui-panel weui-panel_access">
+                <div class="my-weui-panel__hd"> 设置 </div>
+                <div class="weui-panel__bd">
+                    <div class="weui-cells__group weui-cells__group_form">
+                        <div class="weui-cells weui-cells_form">
+                            <div class="weui-cell weui-cell_active weui-cell_switch">
+                                <div class="weui-cell__bd">popup创建时弹出提示信息</div>
+                                <div class="weui-cell__ft">
+                                    <input class="weui-switch" type="checkbox" id="popupSwitch">
+                                </div>
+                            </div>
+                            <div class="weui-cell weui-cell_active weui-cell_switch">
+                                <div class="weui-cell__bd">处于非校园网环境时，访问my网自动转跳到WebVpn登录页</div>
+                                <div class="weui-cell__ft">
+                                    <input class="weui-switch" type="checkbox" id="autoRedirectSwitch">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="weui-footer">
+            <p class="weui-footer__links">
+                <a class="weui-footer__link open-popup"
+                    href="https://github.com/Woodykaixa/bjut-vpn-connector/blob/master/README.md">关于本扩展</a>
+                <a class="weui-footer__link" href="https://github.com/Woodykaixa/bjut-vpn-connector/issues">bug反馈/提出建议</a>
+            </p>
+        </div>
+    </div>
+    <script src="./options.js"></script>
 </body>
 
 </html>

@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "bjut-vpn-connector",
   "description": "Help you connecting vpn and WebVpn of Beijing University of Technology",
-  "version": "0.7.2",
+  "version": "0.8.1",
   "browser_action": {
     "default_icon": "./img/VPN.png",
     "default_popup": "popup.html",
@@ -13,12 +13,16 @@
       "background.js"
     ]
   },
-  "options_page": "options.html",
+  "options_ui": {
+    "page": "options.html",
+    "chrome_style": false
+  },
   "permissions": [
     "webRequest",
     "webRequestBlocking",
     "storage",
     "*://*.bjut.edu.cn/*",
     "notifications"
-  ]
+  ],
+  "homepage_url": "https://github.com/Woodykaixa/bjut-vpn-connector"
 }
