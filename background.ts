@@ -113,7 +113,7 @@ class VpnConnector {
     }
 
     static getRedirectionType(url: string) {
-        if (/^https:\/\/my(svr)?\.bjut\.edu\.cn\/.*$/.test(url)) {
+        if (/^https?:\/\/my(svr)?\.bjut\.edu\.cn\/.*$/.test(url)) {
             return RedirectionType.autoRedirect
         }
         else if (/^https?:\/\/(?!vpn)[^.]+\.bjut\.edu\.cn\/.*$/.test(url) &&
@@ -217,16 +217,17 @@ const onBeforeRequestListener = (detail: chrome.webRequest.WebRequestBodyDetails
     const type = VpnConnector.getRedirectionType(detail.url)
     switch (type) {
         case RedirectionType.noRedirect:
-            alert(`no redirect: ${detail.url}`)
+            console.log(`链接无需重定向: ${detail.url}`)
             return null
         case RedirectionType.vpnRedirect:
             if (connector.getConnectionStatus() !== common.ConnectionStatus['connected']) {
-                alert(`vpn not connect, no redirect: ${detail.url}`)
+                console.log(`VPN未连接，不进行重定向: ${detail.url}`)
                 return null
             }
-            alert(`vpn redirect: ${detail.url} to ${makeVpnRedirectUrl(detail.url)}`)
+            let RedirectUrl = makeVpnRedirectUrl(detail.url)
+            console.log(`VPN已连接，将url: ${detail.url} 重定向至 ${RedirectUrl}`)
             return {
-                redirectUrl: makeVpnRedirectUrl(detail.url)
+                redirectUrl: RedirectUrl
             }
         case RedirectionType.autoRedirect:
             let request = new XMLHttpRequest()
@@ -234,15 +235,15 @@ const onBeforeRequestListener = (detail: chrome.webRequest.WebRequestBodyDetails
                 request.open('GET', 'https://my.bjut.edu.cn', false)
                 request.send()
                 if (request.getResponseHeader('Content-Length') !== '0') {
-                    alert(`auto redirect: ${detail.url}`)
+                    console.log(`自动重定向: ${detail.url}`)
                     return {
                         redirectUrl: VpnConnector.WebVpnUrl
                     }
                 }
-                alert(`auto redirect in school network, so no redirect: ${detail.url}`)
+                console.log(`校园网环境，无需重定向: ${detail.url}`)
                 return null
             } catch (e) {
-                alert(`catch error, auto redirect: ${detail.url}`)
+                console.log(`非校园网环境，自动重定向至: ${detail.url}`)
                 return {
                     redirectUrl: VpnConnector.WebVpnUrl
                 }
