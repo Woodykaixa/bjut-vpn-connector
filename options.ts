@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'PopupNotificationOn',
         'AutoRedirectOn'
     ], (result) => {
-        popupSwitch.checked = result.PopupNotificationOn
-        autoRedirectSwitch.checked = result.AutoRedirectOn
+        popupSwitch.checked = (result.PopupNotificationOn === true)
+        autoRedirectSwitch.checked = (result.AutoRedirectOn === true)
     })
 })

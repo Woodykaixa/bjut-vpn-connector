@@ -11,7 +11,6 @@ const wrapPassword = (password: string) => {
     return password
 }
 
-
 enum RedirectionType {
     vpnRedirect,
     autoRedirect,
@@ -112,6 +111,10 @@ class VpnConnector {
         return /^\d{8}$/.test(loginId)
     }
 
+    /**
+     * 判断url重定向类型
+     * @param url webRequest的url
+     */
     static getRedirectionType(url: string) {
         if (/^https?:\/\/my(svr)?\.bjut\.edu\.cn\/.*$/.test(url)) {
             return RedirectionType.autoRedirect
@@ -126,10 +129,6 @@ class VpnConnector {
 
 }
 
-/**
- * 处理登录请求
- * @param content 
- */
 const handleLogin = (content: common.LoginContent) => {
     let id = content.id
     let password = content.pwd
@@ -143,10 +142,6 @@ const handleLogin = (content: common.LoginContent) => {
     }
 }
 
-/**
- * 处理查询请求
- * @param content 查询内容
- */
 const handleQuery = (content: common.QueryContent) => {
     if (content.what === 'connection status') {
         return connector.getConnectionStatus()
@@ -154,9 +149,6 @@ const handleQuery = (content: common.QueryContent) => {
     return `cannot query content: ${content.what}`
 }
 
-/**
- * 处理登出请求
- */
 const handleLogout = () => {
     connector.tryDisconnect()
     return 'posted'
@@ -168,6 +160,7 @@ const handleBackgroundAlert = (content: string) => {
 
 const handleChangeOption = (content: any) => {
     if (content.option === 'AutoRedirectOn') {
+        console.log(`选项${content.option}状态由${autoRedirectOn}改变为${false}`)
         autoRedirectOn = content.changeTo
     }
 }
@@ -234,19 +227,17 @@ const onBeforeRequestListener = (detail: chrome.webRequest.WebRequestBodyDetails
             try {
                 request.open('GET', 'https://my.bjut.edu.cn', false)
                 request.send()
-                if (request.getResponseHeader('Content-Length') !== '0') {
-                    console.log(`自动重定向: ${detail.url}`)
+                console.log(`校园网环境，无需重定向: ${detail.url}`)
+                return null
+            } catch (e) {
+                if (autoRedirectOn) {
+                    console.log(`非校园网环境，自动重定向: ${detail.url}`)
                     return {
                         redirectUrl: VpnConnector.WebVpnUrl
                     }
                 }
-                console.log(`校园网环境，无需重定向: ${detail.url}`)
+                console.log(`自动重定向未启用: ${detail.url}`)
                 return null
-            } catch (e) {
-                console.log(`非校园网环境，自动重定向至: ${detail.url}`)
-                return {
-                    redirectUrl: VpnConnector.WebVpnUrl
-                }
             }
     }
 }
@@ -263,5 +254,6 @@ let autoRedirectOn: boolean = false
 console.info('日志是否隐藏密码: ' + HidePassword)
 connector = new VpnConnector()
 chrome.storage.local.get(['AutoRedirectOn'], (result) => {
-    autoRedirectOn = result.AutoRedirectOn
+    autoRedirectOn = (result.AutoRedirectOn === true)
+    console.log(`非校园网环境自动重定向功能是否启用：${autoRedirectOn}`)
 })

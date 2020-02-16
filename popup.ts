@@ -117,7 +117,6 @@ connectButton.addEventListener('click', () => {
     })
 })
 
-
 /**
  * 断开按钮点击事件。
  */
@@ -125,7 +124,6 @@ disconnectButton.addEventListener('click', () => {
     changeStatus(common.ConnectionStatus['disconnecting'])
     chrome.runtime.sendMessage(common.msg('logout', null))
 })
-
 
 rememberMeCheckbox.addEventListener('click', () => {
     rememberLoginInfo = rememberMeCheckbox.checked
@@ -157,7 +155,7 @@ const onMessageListener = (message: common.Message, sender, sendResponse: common
 chrome.runtime.onMessage.addListener(onMessageListener)
 
 const createNotification = (PopupNotificationOn: boolean) => {
-    if (PopupNotificationOn === true) {
+    if (PopupNotificationOn !== false) {
         chrome.notifications.create('AboutExtension', {
             type: 'basic',
             iconUrl: './img/about.png',
