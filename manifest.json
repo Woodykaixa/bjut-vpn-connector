@@ -8,8 +8,8 @@
     "default_popup": "popup.html",
     "default_title": "点击连接到北京工业大学VPN"
   },
-  "icons":{
-    "128":"./img/icon128.png"
+  "icons": {
+    "128": "./img/icon128.png"
   },
   "background": {
     "scripts": [
@@ -26,6 +26,9 @@
     "storage",
     "*://*.bjut.edu.cn/*",
     "notifications"
+  ],
+  "optional_permissions": [
+    "contextMenus"
   ],
   "homepage_url": "https://github.com/Woodykaixa/bjut-vpn-connector"
 }

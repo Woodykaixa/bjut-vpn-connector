@@ -40,3 +40,11 @@ export enum ConnectionStatus {
     connected,
     disconnecting
 }
+
+export const checkPermissions = (permissions: string[]): Promise<any> => {
+    return new Promise((resolve, reject) => {
+        chrome.permissions.contains({ permissions }, (granted: boolean) => {
+            resolve(granted)
+        })
+    })
+}
