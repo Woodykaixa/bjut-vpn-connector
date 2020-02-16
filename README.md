@@ -1,5 +1,5 @@
 # bjut-vpn-connector
- ![](https://img.shields.io/static/v1?label=&message=chrome%20extension&color=blue) ![](https://img.shields.io/static/v1?label=status&message=not%20finished&color=red) ![](https://img.shields.io/static/v1?label=version&message=internal&color=blue) ![](https://img.shields.io/github/license/Woodykaixa/bjut-vpn-connector)
+![](https://img.shields.io/static/v1?label=version&message=1.0.0&color=blue) ![](https://img.shields.io/github/license/Woodykaixa/bjut-vpn-connector)
  
 用于连接北京工业大学vpn的Chrome扩展
 
