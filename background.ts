@@ -1,4 +1,5 @@
-import * as common from "./common"
+import * as common from './common'
+import { SiteMenuCreator } from './BjutSitesMenu'
 
 /**
  * 隐藏密码
@@ -250,10 +251,21 @@ chrome.webRequest.onBeforeRequest.addListener(
 
 const HidePassword = true
 let connector: VpnConnector = null
+let menuCreator: SiteMenuCreator = null
 let autoRedirectOn: boolean = false
-console.info('日志是否隐藏密码: ' + HidePassword)
-connector = new VpnConnector()
-chrome.storage.local.get(['AutoRedirectOn'], (result) => {
-    autoRedirectOn = (result.AutoRedirectOn === true)
-    console.log(`非校园网环境自动重定向功能是否启用：${autoRedirectOn}`)
+
+document.addEventListener('DOMContentLoaded', () => {
+    connector = new VpnConnector()
+    menuCreator = new SiteMenuCreator('BJUTNetworkHelperRightClickMenu',
+        '北京工业大学网址导航')
+    console.info('日志是否隐藏密码: ' + HidePassword)
+    chrome.storage.local.get(['AutoRedirectOn'], (result) => {
+        autoRedirectOn = (result.AutoRedirectOn === true)
+        console.log(`非校园网环境自动重定向功能是否启用：${autoRedirectOn}`)
+    })
+    common.checkPermissions(['contextMenus']).then((granted) => {
+        if (granted) {
+            menuCreator.createSiteMenu()
+        }
+    })
 })
