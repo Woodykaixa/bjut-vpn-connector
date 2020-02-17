@@ -160,8 +160,8 @@ const handleBackgroundAlert = (content: string) => {
 }
 
 const handleChangeOption = (content: any) => {
+    console.log(`选项${content.option}状态改变为${content.changeTo}`)
     if (content.option === 'AutoRedirectOn') {
-        console.log(`选项${content.option}状态由${autoRedirectOn}改变为${false}`)
         autoRedirectOn = content.changeTo
     }
 }
