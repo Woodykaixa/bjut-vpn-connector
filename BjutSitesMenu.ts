@@ -13,13 +13,17 @@ const BjutSites: SiteInfo[] = [
         url: 'http://gdjwgl.bjut.edu.cn'
     },
     {
-        title: '北京工业大学网上办事',
-        url: 'http://mysvr.bjut.edu.cn'
+        title: '北京工业大学网络教学平台',
+        url: 'http://bjut.fanya.chaoxing.com/portal'
     },
     {
         title: '北京工业大学图书馆',
-        url: 'https://lib.bjut.edu.cn'
+        url: 'http://lib.bjut.edu.cn/'
     },
+    {
+        title: '北京工业大学网上办事',
+        url: 'http://mysvr.bjut.edu.cn'
+    }
 ]
 
 
