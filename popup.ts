@@ -1,30 +1,25 @@
-import * as common from "./common"
-/**
- * 通过id获取HTML元素，有点像JQuery那个$。但是想到没准以后要用JQuery，所以
- * 换了个名字。直接调这个函数能少写一笔是一笔。
- * @param id 
- */
-const getElement = (id: string) => {
-    return document.getElementById(id)
-}
+import * as types from './types'
+import * as util from './util'
+import { $, msg } from "./util"
+import { VpnConnectionStatus } from './BjutVpnConnector'
 
-let nameInput = <HTMLInputElement>getElement("studentId")
-let pwdInput = <HTMLInputElement>getElement('password')
-let connectButton = <HTMLButtonElement>getElement('connect')
-let disconnectButton = <HTMLButtonElement>getElement('disconnect')
-let rememberMeCheckbox = <HTMLInputElement>getElement('rememberMe')
+
+let nameInput = <HTMLInputElement>$("studentId")
+let pwdInput = <HTMLInputElement>$('password')
+let connectButton = <HTMLButtonElement>$('connect')
+let disconnectButton = <HTMLButtonElement>$('disconnect')
+let rememberMeCheckbox = <HTMLInputElement>$('rememberMe')
 let connectionStatusCode: number = null
 let rememberLoginInfo: boolean = null
-let autoRedirectOn: boolean = false
 
 /**
  * HTML中用于显示状态的元素集合。
  */
 const StatusBoxes = [
-    getElement('statusNotConnected'),
-    getElement('statusConnecting'),
-    getElement('statusConnected'),
-    getElement('statusDisconnecting')
+    $('statusNotConnected'),
+    $('statusConnecting'),
+    $('statusConnected'),
+    $('statusDisconnecting')
 ]
 
 /**
@@ -45,7 +40,7 @@ const changeDisplayedStatus = (status: number) => {
  */
 const queryConnectionStatus = (): Promise<any> => {
     return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage(common.msg('query', { what: 'connection status' }), (response) => {
+        chrome.runtime.sendMessage(msg('query', { what: 'connection status' }), (response) => {
             connectionStatusCode = response.msg
             resolve()
         })
@@ -63,10 +58,10 @@ const changeStatus = (statusCode: number) => {
         return
     }
     changeDisplayedStatus(statusCode)
-    if (statusCode === common.ConnectionStatus['connected']) {
+    if (statusCode === VpnConnectionStatus['connected']) {
         connectButton.style.display = 'none'
         disconnectButton.style.removeProperty('display')
-    } else if (statusCode === common.ConnectionStatus['not_connected']) {
+    } else if (statusCode === VpnConnectionStatus['not_connected']) {
         disconnectButton.style.display = 'none'
         connectButton.style.removeProperty('display')
     }
@@ -81,38 +76,20 @@ const saveLoginInfo = () => {
     }
 }
 
-const getLocalLoginInfo = () => {
-    chrome.storage.local.get(['rememberMe'], (result) => {
-        rememberLoginInfo = result.rememberMe
-        rememberMeCheckbox.checked = rememberLoginInfo
-        if (rememberLoginInfo) {
-            chrome.storage.local.get(['name', 'password'], (result) => {
-                if (result.name !== null && result.password !== null) {
-                    nameInput.value = result.name
-                    pwdInput.value = result.password
-                }
-            })
-        }
-    })
-}
-
-const requestBackgroundAlert = (msg: string) => {
-    chrome.runtime.sendMessage(common.msg('alert', msg))
-}
 
 /**
  * 连接按钮点击事件。向background发送登录用的数据。
  */
 connectButton.addEventListener('click', () => {
-    changeStatus(common.ConnectionStatus['connecting'])
+    changeStatus(VpnConnectionStatus['connecting'])
     let loginInfo = {
         id: nameInput.value,
         pwd: pwdInput.value
     }
-    chrome.runtime.sendMessage(common.msg('login', loginInfo), (response) => {
+    chrome.runtime.sendMessage(msg('login', loginInfo), (response) => {
         if (response.msg === 'invalid') {
-            changeStatus(common.ConnectionStatus['not_connected'])
-            requestBackgroundAlert('请检查用户名是否输入正确')
+            changeStatus(VpnConnectionStatus['not_connected'])
+            util.requestBackgroundAlert('请检查用户名是否输入正确')
         }
     })
 })
@@ -121,8 +98,8 @@ connectButton.addEventListener('click', () => {
  * 断开按钮点击事件。
  */
 disconnectButton.addEventListener('click', () => {
-    changeStatus(common.ConnectionStatus['disconnecting'])
-    chrome.runtime.sendMessage(common.msg('logout', null))
+    changeStatus(VpnConnectionStatus['disconnecting'])
+    chrome.runtime.sendMessage(msg('logout', null))
 })
 
 rememberMeCheckbox.addEventListener('click', () => {
@@ -140,7 +117,7 @@ rememberMeCheckbox.addEventListener('click', () => {
  * @param sender 
  * @param sendResponse 使用这个函数回应消息
  */
-const onMessageListener = (message: common.Message, sender, sendResponse: common.ResponseFunction) => {
+const onMessageListener = (message: types.Message, sender, sendResponse: types.ResponseFunction) => {
     if (message.type === 'change_status') {
         changeStatus(message.content.changeTo)
     }
@@ -148,7 +125,7 @@ const onMessageListener = (message: common.Message, sender, sendResponse: common
         saveLoginInfo()
     }
     else if (message.content.reason === 'login failed') {
-        requestBackgroundAlert('连接失败，请检查密码')
+        util.requestBackgroundAlert('连接失败，请检查密码')
     }
 }
 
@@ -176,10 +153,22 @@ const buttonClickListener = (notificationId: string, buttonIndex: number) => {
 chrome.notifications.onButtonClicked.addListener(buttonClickListener)
 
 document.addEventListener('DOMContentLoaded', () => {
-    queryConnectionStatus()
-        .then(() => changeStatus(connectionStatusCode))
-    getLocalLoginInfo()
-    chrome.storage.local.get(['PopupNotificationOn'], (result) => {
+    queryConnectionStatus().then(() =>
+        changeStatus(connectionStatusCode)
+    )
+    util.getLocalStorage([
+        'PopupNotificationOn',
+        'rememberMe',
+        'name',
+        'password'
+    ]).then((result) => {
         createNotification(result.PopupNotificationOn)
+        return result
+    }).then((result) => {
+        rememberMeCheckbox.checked = result.rememberMe
+        if (result.rememberMe && result.name !== null && result.password !== null) {
+            nameInput.value = result.name
+            pwdInput.value = result.password
+        }
     })
 })
