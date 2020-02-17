@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "bjut-vpn-connector",
-  "description": "Help you connecting vpn and WebVpn of Beijing University of Technology",
+  "description": "整合北京工业大学官方提供的的VPN和WebVpn，模拟校园网环境访问内网的体验。",
   "version": "1.1",
   "browser_action": {
     "default_icon": "./img/icon128.png",
