@@ -12,10 +12,10 @@
         "message": "关于本扩展"
     },
     "aboutExtensionMessage": {
-        "message": "本扩展的vpn连接功能仅适用于访问教务网站，访问my网请使用我校WebVpn"
+        "message": "欢迎使用本扩展，若对本扩展有疑问，请访问本扩展的Github仓库。"
     },
     "aboutExtensionContextMessage": {
-        "message": "您可以在设置页面启用自动转跳功能，此功能可以在访问my网时转跳到WebVpn页面"
+        "message": "本扩展会储存您的个人数据。具体内容本扩展的隐私策略"
     },
     "aboutExtensionButtonTitle": {
         "message": "不再提示"
