@@ -1,0 +1,44 @@
+{
+    "WebSiteGuidanceOn": {
+        "message": "网址导航功能已开启，请重新加载本扩展或重启浏览器以应用设置"
+    },
+    "WebSiteGuidanceOff": {
+        "message": "网址导航功能已关闭，请重新加载本扩展或重启浏览器以应用设置"
+    },
+    "webSiteGuidanceTitle": {
+        "message": "北京工业大学网址导航"
+    },
+    "aboutExtensionTitle": {
+        "message": "关于本扩展"
+    },
+    "aboutExtensionMessage": {
+        "message": "本扩展的vpn连接功能仅适用于访问教务网站，访问my网请使用我校WebVpn"
+    },
+    "aboutExtensionContextMessage": {
+        "message": "您可以在设置页面启用自动转跳功能，此功能可以在访问my网时转跳到WebVpn页面"
+    },
+    "aboutExtensionButtonTitle": {
+        "message": "不再提示"
+    },
+    "checkLoginIdMessage": {
+        "message": "请检查用户名是否输入正确"
+    },
+    "loginFailMessage": {
+        "message": "登录失败，请检查密码"
+    },
+    "siteMyTitle": {
+        "message": "信息门户"
+    },
+    "siteGdjwglTitle": {
+        "message": "教务系统"
+    },
+    "siteMysvrTitle": {
+        "message": "网上办事"
+    },
+    "siteLibTitle": {
+        "message": "图书馆"
+    },
+    "siteFanyaTitle": {
+        "message": "网络教学平台"
+    }
+}

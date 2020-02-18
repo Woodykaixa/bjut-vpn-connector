@@ -105,8 +105,4 @@ export class VpnConnector {
     static isValidId(loginId: string) {
         return /^\d{8}$/.test(loginId)
     }
-
-
-
-
 }

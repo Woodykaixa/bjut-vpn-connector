@@ -113,7 +113,7 @@ let autoRedirectOn: boolean = false
 document.addEventListener('DOMContentLoaded', () => {
     connector = new VpnConnector(true)
     menuCreator = new SiteMenuCreator('BJUTNetworkHelperRightClickMenu',
-        '北京工业大学网址导航')
+        chrome.i18n.getMessage('webSiteGuidanceTitle'))
     getLocalStorage(['AutoRedirectOn']).then((result) => {
         autoRedirectOn = (result.AutoRedirectOn === true)
         console.log(`非校园网环境自动重定向功能是否启用：${autoRedirectOn}`)

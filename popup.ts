@@ -89,7 +89,7 @@ connectButton.addEventListener('click', () => {
     chrome.runtime.sendMessage(msg('login', loginInfo), (response) => {
         if (response.msg === 'invalid') {
             changeStatus(VpnConnectionStatus['not_connected'])
-            util.requestBackgroundAlert('请检查用户名是否输入正确')
+            util.requestBackgroundAlert(chrome.i18n.getMessage('checkLoginIdMessage'))
         }
     })
 })
@@ -125,7 +125,7 @@ const onMessageListener = (message: types.Message, sender, sendResponse: types.R
         saveLoginInfo()
     }
     else if (message.content.reason === 'login failed') {
-        util.requestBackgroundAlert('连接失败，请检查密码')
+        util.requestBackgroundAlert(chrome.i18n.getMessage('loginFailMessage'))
     }
 }
 
@@ -136,11 +136,11 @@ const createNotification = (PopupNotificationOn: boolean) => {
         chrome.notifications.create('AboutExtension', {
             type: 'basic',
             iconUrl: './img/about.png',
-            title: '关于本插件',
-            message: '本插件仅限于连接教务网站以及图书馆网站使用，连接my网请使用我校WebVpn',
-            contextMessage: '您可以在设置页面启用自动转跳功能转跳到WebVpn页面',
+            title: chrome.i18n.getMessage('aboutExtensionTitle'),
+            message: chrome.i18n.getMessage('aboutExtensionMessage'),
+            contextMessage: chrome.i18n.getMessage('aboutExtensionContextMessage'),
             buttons: [
-                { title: '不再提示' }
+                { title: chrome.i18n.getMessage('aboutExtensionButtonTitle') }
             ]
         })
     }

@@ -5,23 +5,23 @@ interface SiteInfo {
 
 const BjutSites: SiteInfo[] = [
     {
-        title: '北京工业大学信息门户',
+        title: chrome.i18n.getMessage('siteMyTitle'),
         url: 'https://my.bjut.edu.cn'
     },
     {
-        title: '北京工业大学教务系统',
+        title: chrome.i18n.getMessage('siteGdjwglTitle'),
         url: 'http://gdjwgl.bjut.edu.cn'
     },
     {
-        title: '北京工业大学网络教学平台',
+        title: chrome.i18n.getMessage('siteFanyaTitle'),
         url: 'http://bjut.fanya.chaoxing.com/portal'
     },
     {
-        title: '北京工业大学图书馆',
+        title: chrome.i18n.getMessage('siteLibTitle'),
         url: 'http://lib.bjut.edu.cn/'
     },
     {
-        title: '北京工业大学网上办事',
+        title: chrome.i18n.getMessage('siteMysvrTitle'),
         url: 'http://mysvr.bjut.edu.cn'
     }
 ]
@@ -47,7 +47,7 @@ export class SiteMenuCreator {
         BjutSites.forEach((site) => {
             chrome.contextMenus.create({
                 parentId: this.id,
-                title: site.title,
+                title: '北京工业大学' + site.title,
                 onclick: () => {
                     chrome.tabs.create({ url: site.url })
                 }

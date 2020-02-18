@@ -22,7 +22,7 @@ autoRedirectSwitch.addEventListener('click', () => {
 
 contextMenuSwitch.addEventListener('click', () => {
     let optionContextMenuOn = contextMenuSwitch.checked
-    let msg = `网址导航功能已${optionContextMenuOn ? '开启' : '关闭'}，请重新加载本扩展或重启浏览器以应用设置`
+    let msg = chrome.i18n.getMessage(`webSiteGuidance${optionContextMenuOn ? 'On' : 'Off'}`)
     util.checkPermissions(['contextMenus']).then((granted) => {
         util.requestBackgroundAlert(msg)
         if (granted && !optionContextMenuOn) {
