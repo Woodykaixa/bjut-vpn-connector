@@ -1,5 +1,5 @@
 # bjut-vpn-connector
-![](https://img.shields.io/static/v1?label=version&message=1.0.0&color=blue) ![](https://img.shields.io/github/license/Woodykaixa/bjut-vpn-connector)
+![](https://img.shields.io/static/v1?label=version&message=1.2&color=blue) ![](https://img.shields.io/github/license/Woodykaixa/bjut-vpn-connector) ![](https://img.shields.io/static/v1?label=made%20for&message=Beijing%20University%20of%20Technology&color=0096c3)
  
 用于连接北京工业大学vpn的Chrome扩展
 
@@ -40,5 +40,9 @@ __先说好，这可不是我做的VPN，我只是用插件整合了学校提供
 你可以在设置页面中启用`非校园网环境访问my网自动转跳到WebVpn登录页`功能。__注意：启动以后无论是否连接vpn，只要是访问信息门户和网上办事都会转跳__。
 如果遇到了bug，或者你对本扩展有什么想法和建议，可以点击最下方的`bug反馈/提出建议`来告诉我们。
 ![](readme_img/readme06.png)
+
+## 隐私政策
+
+上架Microsoft Edge Addons需要提供[隐私政策](http://59.110.236.102/BjutVpnConnector/Privacy)链接(是的，本扩展正在parter center审核，即将上架)
 ## 版权许可
 MIT
