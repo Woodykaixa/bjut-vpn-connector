@@ -17,18 +17,23 @@ __先说好，这可不是我做的VPN，我只是用插件整合了学校提供
 ### 资源和框架
 + popup和options界面使用 [WeUI](https://github.com/Tencent/weui)
 
-## 安装本扩展
+## 安装扩展
 
 ### 安装要求
 本扩展可以安装在Google Chrome浏览器以及Chromium内核浏览器，比如新版Edge以及一众国产浏览器。
 
-### 安装方法
+### 解压安装
 1. 到release页面下载zip压缩包，并解压缩。
 2. 打开浏览器，找到`扩展程序`选项
    ![](./readme_img/readme01.png)
 
 3. 先启用`开发者模式`，再点击`加载已解压缩的扩展`，选择扩展的根目录即可完成安装
    ![](readme_img/readme02.png)
+
+
+### 从扩展商店安装
+
+本扩展已经上架Microsoft Edge Addons，点击查看[隐私政策](http://59.110.236.102/BjutVpnConnector/Privacy)
 
 ## 如何使用
 点击浏览器地址栏右侧图标（深色主题下可能看不清，鼠标移上去会有提示）
@@ -48,8 +53,5 @@ __先说好，这可不是我做的VPN，我只是用插件整合了学校提供
 
 ![](readme_img/readme06.png)
 
-## 隐私政策
-
-上架Microsoft Edge Addons需要提供[隐私政策](http://59.110.236.102/BjutVpnConnector/Privacy)链接(是的，本扩展正在parter center审核，即将上架)
 ## 版权许可
 MIT
