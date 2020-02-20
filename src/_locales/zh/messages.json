@@ -12,7 +12,7 @@
         "message": "关于本扩展"
     },
     "aboutExtensionMessage": {
-        "message": "欢迎使用本扩展，若对本扩展有疑问，请访问本扩展的Github仓库。"
+        "message": "欢迎使用本扩展，若对本扩展有疑问，请访问本扩展的Github主页。"
     },
     "aboutExtensionContextMessage": {
         "message": "本扩展会储存您的个人数据。具体内容本扩展的隐私策略"

@@ -33,7 +33,7 @@ __先说好，这可不是我做的VPN，我只是用插件整合了学校提供
 
 ### 从扩展商店安装
 
-本扩展已经上架Microsoft Edge Addons，点击查看[隐私政策](http://59.110.236.102/BjutVpnConnector/Privacy)
+本扩展已经上架Microsoft Edge Addons，点击查看[隐私政策](Privacy.md)
 
 ## 如何使用
 点击浏览器地址栏右侧图标（深色主题下可能看不清，鼠标移上去会有提示）
