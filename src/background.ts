@@ -7,14 +7,9 @@ import { VpnConnector, VpnConnectionStatus } from './BjutVpnConnector'
 const handleLogin = (content: types.LoginContent) => {
     let id = content.id
     let password = content.pwd
-    if (VpnConnector.isValidId(id)) {
-        connector.setLoginInfo(id, password)
-        connector.tryConnect()
-        return 'posted'
-    } else {
-        console.info('用户名格式错误，拒绝尝试连接')
-        return 'invalid'
-    }
+    connector.setLoginInfo(id, password)
+    connector.tryConnect()
+    return 'posted'
 }
 
 const handleQuery = (content: types.QueryContent) => {
